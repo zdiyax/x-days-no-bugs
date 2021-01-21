@@ -1,0 +1,1 @@
+web: bin/x-days-no-bugs
