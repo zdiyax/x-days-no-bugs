@@ -9,19 +9,28 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func MakeHandler(s counterService) http.Handler {
+type ServerError struct {
+	 StatusCode uint
+	 ErrorMessage string
+}
+
+func(rs ServerError) Error () string {
+	return rs.ErrorMessage
+}
+
+func MakeHandler(cs counterService) http.Handler {
 	options := []kithttp.ServerOption{
 		kithttp.ServerErrorEncoder(encodeError),
 	}
 
 	getCounter := kithttp.NewServer(
-		makeGetCounterEndpoint(&s),
+		makeGetCounterEndpoint(cs),
 		decodeGetCounterRequest,
 		encodeResponse,
 		options...)
 
 	nilCounter := kithttp.NewServer(
-		makeNilCounterEndpoint(&s),
+		makeNilCounterEndpoint(cs),
 		decodeNilCounterRequest,
 		encodeResponse,
 		options...)
@@ -55,8 +64,8 @@ func decodeNilCounterRequest(_ context.Context, r *http.Request) (request interf
 }
 
 func encodeResponse(_ context.Context, w http.ResponseWriter, r interface{}) error {
-	if e, ok := r.(errorInterface); ok && e.error() != nil {
-		encodeError(context.Background(), e.error(), w)
+	if e, ok := r.(ServerError); ok && &e != nil {
+		encodeError(context.Background(), e, w)
 		return nil
 	}
 
@@ -64,9 +73,24 @@ func encodeResponse(_ context.Context, w http.ResponseWriter, r interface{}) err
 }
 
 func encodeError(_ context.Context, err error, w http.ResponseWriter) {
-	_ = json.NewEncoder(w).Encode(err)
-}
+	servErr := err.(ServerError)
 
-type errorInterface interface {
-	error() error
+	switch servErr.StatusCode {
+	case 500:
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Sorry :( \n Server Internal error"))
+	case 400:
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Bad request"))
+	case 404:
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("Not found"))
+	case 413:
+		w.WriteHeader(http.StatusRequestEntityTooLarge)
+		w.Write([]byte("Request entity too large"))
+	case 503:
+		w.WriteHeader(http.StatusServiceUnavailable)
+		w.Write([]byte("Service unavailable"))
+	}
+
 }

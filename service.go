@@ -10,31 +10,54 @@ type CounterInterface interface {
 }
 
 type counterService struct {
-	C Counter `json:"c"`
+	CounterColl CounterCollectionInterface
 }
 
-func (s *counterService) Init() {
-	s.C = Counter{
-		Days:        0,
-		CurrentDate: time.Now(),
-	}
+func (s *counterService) Init(mg CounterCollectionInterface) {
+	s.CounterColl = mg
+	//= Counter{
+	//	Days:        0,
+	//	CurrentDate: time.Now(),
+	//}
 }
 
 func (s *counterService) GetCounter(req getCounterRequest) *getCounterResponse {
-	resp := getCounterResponse{}
+
+	counter, err := s.CounterColl.GetCounterDB()
+	if err != nil {
+		resp := getCounterResponse{
+			ServerError: &ServerError{},
+		}
+		resp.ServerError.StatusCode = 500
+		resp.ServerError.ErrorMessage = err.Error()
+		return &resp
+	}
 
 	t := time.Now()
-	daysPassed := t.Sub(s.C.CurrentDate).Hours() / 24
-	resp.Counter = int(daysPassed)
-
+	daysPassed := t.Sub(counter.CurrentDate).Hours() / 24
+	resp := getCounterResponse{
+		Counter: int(daysPassed),
+	}
 	return &resp
 }
 
 func (s *counterService) NilCounter(req nilCounterRequest) *nilCounterResponse {
-	resp := nilCounterResponse{}
 
-	s.C.Days = 0
-	s.C.CurrentDate = time.Now()
+	err := s.CounterColl.NilCounterDB()
+	if err != nil {
+		resp := nilCounterResponse{
+			Success: false,
+			ServerError: &ServerError{
+				StatusCode: 500,
+				ErrorMessage: err.Error(),
+			},
+
+		}
+		return &resp
+	}
+	resp := nilCounterResponse{
+		Success: true,
+	}
 
 	return &resp
 }

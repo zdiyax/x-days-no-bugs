@@ -6,8 +6,19 @@ import (
 )
 
 func main() {
+	dbConfig := MongoConfig{
+		Host:     "localhost",
+		Database: "example",
+		Port:     "27017",
+	}
+	
+	
 	metricsService := &counterService{}
-	metricsService.Init()
+	counterCol, err := InitCounterCollection(dbConfig)
+	if err != nil {
+		panic(err)
+	}
+	metricsService.Init(counterCol)
 
 	m := http.NewServeMux()
 	m.Handle("/days/", MakeHandler(*metricsService))
