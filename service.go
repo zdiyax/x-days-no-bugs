@@ -1,9 +1,5 @@
 package main
 
-import (
-	"time"
-)
-
 type CounterInterface interface {
 	GetCounter(req getCounterRequest) *getCounterResponse
 	NilCounter(req nilCounterRequest) *nilCounterResponse
@@ -15,10 +11,6 @@ type counterService struct {
 
 func (s *counterService) Init(mg CounterCollectionInterface) {
 	s.CounterColl = mg
-	//= Counter{
-	//	Days:        0,
-	//	CurrentDate: time.Now(),
-	//}
 }
 
 func (s *counterService) GetCounter(req getCounterRequest) *getCounterResponse {
@@ -33,10 +25,9 @@ func (s *counterService) GetCounter(req getCounterRequest) *getCounterResponse {
 		return &resp
 	}
 
-	t := time.Now()
-	daysPassed := t.Sub(counter.CurrentDate).Hours() / 24
+
 	resp := getCounterResponse{
-		Counter: int(daysPassed),
+		Counter: counter.Days,
 	}
 	return &resp
 }

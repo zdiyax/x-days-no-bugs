@@ -12,7 +12,6 @@ func main() {
 		Port:     "27017",
 	}
 	
-	
 	metricsService := &counterService{}
 	counterCol, err := InitCounterCollection(dbConfig)
 	if err != nil {
@@ -21,6 +20,7 @@ func main() {
 	metricsService.Init(counterCol)
 
 	m := http.NewServeMux()
+	go CounterTicker()
 	m.Handle("/days/", MakeHandler(*metricsService))
 	http.Handle("/", m)
 
@@ -28,8 +28,3 @@ func main() {
 	http.ListenAndServe(":8080", m)
 }
 
-//func handleAll(h http.Handler) http.Handler {
-//	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-//		h.ServeHTTP(w, r)
-//	})
-//}

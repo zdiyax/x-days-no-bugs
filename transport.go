@@ -3,11 +3,20 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"net/http"
-
 	kithttp "github.com/go-kit/kit/transport/http"
 	"github.com/gorilla/mux"
+	"net/http"
 )
+
+//var upgrader = websocket.Upgrader{
+//	ReadBufferSize:  1024,
+//	WriteBufferSize: 1024,
+//	CheckOrigin: func(r *http.Request) bool {
+//		return true
+//	},
+//}
+
+
 
 type ServerError struct {
 	 StatusCode uint
@@ -71,6 +80,10 @@ func encodeResponse(_ context.Context, w http.ResponseWriter, r interface{}) err
 
 	return json.NewEncoder(w).Encode(r)
 }
+
+
+
+
 
 func encodeError(_ context.Context, err error, w http.ResponseWriter) {
 	servErr := err.(ServerError)

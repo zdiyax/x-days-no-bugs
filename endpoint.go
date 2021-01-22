@@ -2,9 +2,10 @@ package main
 
 import (
 	"context"
-
 	"github.com/go-kit/kit/endpoint"
 )
+
+
 
 func makeGetCounterEndpoint(cs counterService) endpoint.Endpoint {
 	return func(ctx context.Context, r interface{}) (resp interface{}, err error) {

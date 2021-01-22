@@ -15,6 +15,35 @@ var (
 )
 
 
+func CounterTicker()   {
+	ticker := time.NewTicker(time.Hour)
+	for {
+		counter:=&Counter{}
+		filter:=bson.D{}
+		err:=collection.FindOne(context.TODO(),filter).Decode(&counter)
+		if err!=nil{
+			break
+		}
+
+		t := time.Now()
+		daysPassed := t.Sub(counter.CurrentDate).Hours() / 24
+
+		update:=bson.D{{"$set",bson.D{
+			{"days",int(daysPassed)},
+
+		}}}
+
+		_, err = collection.UpdateOne(context.TODO(),filter,update)
+		if err!=nil {
+			break
+		}
+
+		<-ticker.C
+	}
+
+}
+
+
 
 func InitCounterCollection(config MongoConfig) (CounterCollectionInterface, error) {
 
