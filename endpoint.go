@@ -2,26 +2,35 @@ package main
 
 import (
 	"context"
-
 	"github.com/go-kit/kit/endpoint"
 )
 
-func makeGetCounterEndpoint(s *counterService) endpoint.Endpoint {
+
+
+func makeGetCounterEndpoint(cs counterService) endpoint.Endpoint {
 	return func(ctx context.Context, r interface{}) (resp interface{}, err error) {
 		req := r.(getCounterRequest)
+		respCounter := cs.GetCounter(req)
 
-		resp = s.GetCounter(req)
+		if respCounter.ServerError != nil {
+			return nil, *respCounter.ServerError
+		}
 
-		return resp, nil
+
+		return respCounter, nil
 	}
 }
 
-func makeNilCounterEndpoint(s *counterService) endpoint.Endpoint {
+func makeNilCounterEndpoint(cs counterService) endpoint.Endpoint {
 	return func(ctx context.Context, r interface{}) (resp interface{}, err error) {
 		req := r.(nilCounterRequest)
 
-		resp = s.NilCounter(req)
+		respCounter := cs.NilCounter(req)
 
-		return resp, nil
+		if respCounter.ServerError != nil {
+			return nil, *respCounter.ServerError
+		}
+
+		return respCounter, nil
 	}
 }

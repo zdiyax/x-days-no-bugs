@@ -3,25 +3,43 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"net/http"
-
 	kithttp "github.com/go-kit/kit/transport/http"
 	"github.com/gorilla/mux"
+	"net/http"
 )
 
-func MakeHandler(s counterService) http.Handler {
+//var upgrader = websocket.Upgrader{
+//	ReadBufferSize:  1024,
+//	WriteBufferSize: 1024,
+//	CheckOrigin: func(r *http.Request) bool {
+//		return true
+//	},
+//}
+
+
+
+type ServerError struct {
+	 StatusCode uint
+	 ErrorMessage string
+}
+
+func(rs ServerError) Error () string {
+	return rs.ErrorMessage
+}
+
+func MakeHandler(cs counterService) http.Handler {
 	options := []kithttp.ServerOption{
 		kithttp.ServerErrorEncoder(encodeError),
 	}
 
 	getCounter := kithttp.NewServer(
-		makeGetCounterEndpoint(&s),
+		makeGetCounterEndpoint(cs),
 		decodeGetCounterRequest,
 		encodeResponse,
 		options...)
 
 	nilCounter := kithttp.NewServer(
-		makeNilCounterEndpoint(&s),
+		makeNilCounterEndpoint(cs),
 		decodeNilCounterRequest,
 		encodeResponse,
 		options...)
@@ -55,18 +73,37 @@ func decodeNilCounterRequest(_ context.Context, r *http.Request) (request interf
 }
 
 func encodeResponse(_ context.Context, w http.ResponseWriter, r interface{}) error {
-	if e, ok := r.(errorInterface); ok && e.error() != nil {
-		encodeError(context.Background(), e.error(), w)
+	if e, ok := r.(ServerError); ok && &e != nil {
+		encodeError(context.Background(), e, w)
 		return nil
 	}
 
 	return json.NewEncoder(w).Encode(r)
 }
 
-func encodeError(_ context.Context, err error, w http.ResponseWriter) {
-	_ = json.NewEncoder(w).Encode(err)
-}
 
-type errorInterface interface {
-	error() error
+
+
+
+func encodeError(_ context.Context, err error, w http.ResponseWriter) {
+	servErr := err.(ServerError)
+
+	switch servErr.StatusCode {
+	case 500:
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Sorry :( \n Server Internal error"))
+	case 400:
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Bad request"))
+	case 404:
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("Not found"))
+	case 413:
+		w.WriteHeader(http.StatusRequestEntityTooLarge)
+		w.Write([]byte("Request entity too large"))
+	case 503:
+		w.WriteHeader(http.StatusServiceUnavailable)
+		w.Write([]byte("Service unavailable"))
+	}
+
 }
