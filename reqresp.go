@@ -13,5 +13,5 @@ type nilCounterRequest struct {
 
 type nilCounterResponse struct {
 	Success bool `json:"success"`
-	ServerError *ServerError
+	ServerError *ServerError `json:"-"`
 }
