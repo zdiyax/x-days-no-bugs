@@ -26,18 +26,18 @@ func MakeHandler(s counterService) http.Handler {
 		encodeResponse,
 		options...)
 
-
-	//todo: incrementCounter должен прибавлять +1 к дням и обновлять дату
-	//incrementCounter := kithttp.NewServer(
-	//	makeNilCounterEndpoint(&s),
-	//	decodeNilCounterRequest,
-	//	encodeResponse,
-	//	options...)
+	//todo: incrementCounter должен прибавлять +1 к дням
+	incrementCounter := kithttp.NewServer(
+		makeIncrementCounterEndpoint(&s),
+		decodeIncrementCounterRequest,
+		encodeResponse,
+		options...)
 
 	r := mux.NewRouter()
 
-	r.Handle("/days/counter/", getCounter).Methods("GET")
-	r.Handle("/days/nil/", nilCounter).Methods("GET")
+	r.Handle("/days/counter/increment", incrementCounter).Methods("PUT")
+	r.Handle("/days/counter", getCounter).Methods("GET")
+	r.Handle("/days/nil", nilCounter).Methods("GET")
 
 	return r
 }
@@ -54,7 +54,14 @@ func decodeNilCounterRequest(_ context.Context, r *http.Request) (request interf
 	return apiRequest, nil
 }
 
+func decodeIncrementCounterRequest(_ context.Context, r *http.Request) (request interface{}, err error) {
+	apiRequest := incrementCounterRequest{}
+
+	return apiRequest, nil
+}
+
 func encodeResponse(_ context.Context, w http.ResponseWriter, r interface{}) error {
+
 	if e, ok := r.(errorInterface); ok && e.error() != nil {
 		encodeError(context.Background(), e.error(), w)
 		return nil

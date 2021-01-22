@@ -13,8 +13,8 @@ func main() {
 	m.Handle("/days/", MakeHandler(*metricsService))
 	http.Handle("/", handleAll(m))
 
-	fmt.Println("listening on port :8080")
-	http.ListenAndServe(":8080", m)
+	fmt.Println("listening on port :8083")
+	http.ListenAndServe(":8083", m)
 }
 
 func handleAll(h http.Handler) http.Handler {
