@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/gorilla/mux"
 	"net/http"
 )
 
@@ -19,10 +20,11 @@ func main() {
 	}
 	metricsService.Init(counterCol)
 
-	m := http.NewServeMux()
+	m := mux.NewRouter()
+
 	go CounterTicker()
-	m.Handle("/days/", MakeHandler(*metricsService))
-	http.Handle("/", m)
+
+	m.PathPrefix("/days").Handler( MakeHandler(*metricsService))
 
 	fmt.Println("listening on port :8080")
 	http.ListenAndServe(":8080", m)
