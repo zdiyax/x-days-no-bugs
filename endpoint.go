@@ -16,6 +16,16 @@ func makeGetCounterEndpoint(s *counterService) endpoint.Endpoint {
 	}
 }
 
+func makeIncrementCounterEndpoint(s *counterService) endpoint.Endpoint {
+	return func(ctx context.Context, r interface{}) (resp interface{}, err error) {
+		req := r.(incrementCounterRequest)
+
+		resp = s.IncrementCounter(req)
+
+		return resp, nil
+	}
+}
+
 func makeNilCounterEndpoint(s *counterService) endpoint.Endpoint {
 	return func(ctx context.Context, r interface{}) (resp interface{}, err error) {
 		req := r.(nilCounterRequest)

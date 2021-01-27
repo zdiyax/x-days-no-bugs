@@ -1,12 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"time"
 )
 
 type CounterInterface interface {
 	GetCounter(req getCounterRequest) *getCounterResponse
 	NilCounter(req nilCounterRequest) *nilCounterResponse
+	IncrementCounter(req incrementCounterRequest) *incrementCounterResponse
 }
 
 type counterService struct {
@@ -35,6 +37,15 @@ func (s *counterService) NilCounter(req nilCounterRequest) *nilCounterResponse {
 
 	s.C.Days = 0
 	s.C.CurrentDate = time.Now()
+
+	return &resp
+}
+
+func (s *counterService) IncrementCounter(req incrementCounterRequest) *incrementCounterResponse {
+	resp := incrementCounterResponse{}
+	fmt.Println(s.C.Days)
+	s.C.Days += 1
+	// resp.Counter = s.C.Days
 
 	return &resp
 }
