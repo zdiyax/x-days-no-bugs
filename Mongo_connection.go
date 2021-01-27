@@ -9,11 +9,9 @@ import (
 	"time"
 )
 
-
 var (
 	collection *mongo.Collection
 )
-
 
 func CounterTicker()   {
 	ticker := time.NewTicker(time.Hour)
@@ -43,8 +41,6 @@ func CounterTicker()   {
 
 }
 
-
-
 func InitCounterCollection(config MongoConfig) (CounterCollectionInterface, error) {
 
 	clientOptions:=options.Client().ApplyURI("mongodb://"+config.Host+":"+config.Port)
@@ -59,12 +55,10 @@ func InitCounterCollection(config MongoConfig) (CounterCollectionInterface, erro
 	db:=client.Database(config.Database)
 	collection=db.Collection("Counter")
 
-
 	counter := Counter{
 		Days:        0,
 		CurrentDate: time.Now(),
 	}
-
 
 	_, err = collection.InsertOne(context.TODO(), counter)
 	if err!=nil{
