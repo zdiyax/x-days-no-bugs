@@ -26,16 +26,16 @@ func CounterTicker()   {
 		}
 
 		t := time.Now()
-		daysPassed := t.Sub(counter.CurrentDate).Hours() / 24
+		if t.Hour() == 1 && t.Day() != counter.CurrentDate.Day()  {
+			
+			update := bson.D{{"$set", bson.D{
+				{"days", counter.Days + 1},
+			}}}
 
-		update:=bson.D{{"$set",bson.D{
-			{"days",int(daysPassed)},
-
-		}}}
-
-		_, err = collection.UpdateOne(context.TODO(),filter,update)
-		if err!=nil {
-			break
+			_, err = collection.UpdateOne(context.TODO(), filter, update)
+			if err != nil {
+				break
+			}
 		}
 
 		<-ticker.C
@@ -64,6 +64,7 @@ func InitCounterCollection(config MongoConfig) (CounterCollectionInterface, erro
 		Days:        0,
 		CurrentDate: time.Now(),
 	}
+
 
 	_, err = collection.InsertOne(context.TODO(), counter)
 	if err!=nil{
