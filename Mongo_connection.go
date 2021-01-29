@@ -24,7 +24,8 @@ func CounterTicker()   {
 		}
 
 		t := time.Now()
-		if t.Hour() == 1 && t.Day() != counter.CurrentDate.Day()  {
+
+		if t.Hour() == 0 && !( t.Day() == counter.CurrentDate.Local().Day() && t.Month() == counter.CurrentDate.Local().Month() )   {
 
 			update := bson.D{{"$set", bson.D{
 				{"days", counter.Days + 1},
